@@ -1,0 +1,36 @@
+{
+    "name" : "stackio",
+    "version" : "0.1.2",
+    "description" : "Distributed Event library",
+    "main" : "./index.js",
+    "keywords" : [
+        "message passing",
+        "rpc",
+        "redis",
+        "push pull",
+        "pub sub",
+        "remote",
+        "communication"
+    ],
+    "repository" : {
+        "type" : "git",
+        "url" : "http://github.com/dotcloud/stackio.git"
+    },
+    "directories" : {
+        "examples" : "./examples"
+    },
+    "dependencies" : {
+        "redis" : "0.6.x"
+    },
+    "devDependencies" : {
+        "tap" : "0.0.x"
+    }
+    "engine" : {
+        "node" : ">=0.4.0"
+    },
+    "author" : {
+        "name" : "Samuel Alba",
+        "email" : "sam@dotcloud.com",
+        "url" : "http://www.dotcloud.com/"
+    }
+}
