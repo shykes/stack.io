@@ -1,5 +1,5 @@
 {
-    "name" : "stackio",
+    "name" : "stack.io",
     "version" : "0.1.2",
     "description" : "Distributed Event library",
     "main" : "./index.js",

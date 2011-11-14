@@ -1,6 +1,6 @@
 /**
  * Distributed Message Queue library implementing the EventEmitter API
- * Copyright 2011 DotCloud (Samuel Alba <sam@dotcloud.com>)
+ * Copyright 2011 DotCloud Inc (Samuel Alba <sam@dotcloud.com>))
  *
  * This project is free software released under the MIT license:
  * http://www.opensource.org/licenses/mit-license.php
