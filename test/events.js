@@ -1,4 +1,5 @@
 var stackio = require('../');
+stackio.debug = true;
 var test = require('tap').test;
 
 test('events_pubSub', function (t) {

@@ -1,4 +1,5 @@
 var stackio = require('../');
+stackio.debug = true;
 var test = require('tap').test;
 
 test('rpc_pubSub', function (t) {
@@ -14,7 +15,7 @@ test('rpc_pubSub', function (t) {
     });
 });
 
-test('rpc', function (t) {
+test('rpc_pushPull', function (t) {
     var io = stackio({type: 'push/pull'});
     io.expose('Test', {
         hello: function (reply) {
