@@ -11,5 +11,6 @@ test('rpc', function (t) {
     io.call('Test', 'hello')(function (response) {
         t.equal(42, 'Test.hello() = 42');
         t.end();
+        process.exit();
     });
 });

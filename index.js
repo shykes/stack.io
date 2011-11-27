@@ -6,28 +6,7 @@
  * http://www.opensource.org/licenses/mit-license.php
  */
 
-var redis = require('redis');
-
-var count = 0;
-var createClient = function () {
-    var id = count++;
-    var client = redis.createClient(
-            process.env.DOTCLOUD_REDIS_REDIS_PORT,
-            process.env.DOTCLOUD_REDIS_REDIS_HOST
-            );
-    client.auth(process.env.DOTCLOUD_REDIS_REDIS_PASSWORD);
-    client.id = id;
-    debug('Created client #' + id);
-    client.on('end', function () {
-        debug('Client disconnected #' + id);
-    });
-    client.on('error', function (err) {
-        module.exports.error(err);
-    });
-    return client;
-};
-
-var global_client = createClient();
+var url = require('url');
 
 module.exports = stackio;
 module.exports.debug = false;
@@ -45,10 +24,15 @@ function stackio(options) {
         return new stackio(options);
     this._options = options || {};
     var type = this._options.type || 'pub/sub';
+    var transport_url = this._options.transport || 'redis';
+    var idx = transport_url.indexOf(':');
+    this._options.transport = (idx === -1) ? transport_url : transport_url.slice(0, idx);
+    this._options.transport_url = url.parse(transport_url);
+    transport = require('./lib/' + transport);
     // Selecting the right object based on the settings
     var base = new ({
-        'push/pull': pushPull,
-        'pub/sub': pubSub
+        'push/pull': transport.pushPull,
+        'pub/sub': transport.pubSub
     }[type])(options);
     // Kind-of dynamic inheritance from the base class
     for (var key in base)
@@ -111,135 +95,10 @@ stackio.prototype.call = function (service, method) {
 
 
 /**
- * PUB/SUB object
- */
-
-function pubSub(options) {
-    this._options = options;
-    this._prefix = 'stackio_pubsub_';
-    this._response = new pushPull;
-    this._listeners = {};
-    return this;
-}
-
-pubSub.prototype.on = function (channel, callback) {
-    channel = this._prefix + channel;
-    var client = createClient();
-    if (this._listeners[channel] === undefined)
-        this._listeners[channel] = [];
-    this._listeners[channel].push(client);
-    if (client.closing === false)
-        client.subscribe(channel);
-    debug('#' + client.id + ' SUBSCRIBE ' + channel);
-    client.on('message', function (chan, message) {
-        message = JSON.parse(message);
-        if (message.data !== null)
-            callback(message.data);
-        if (message.close === true)
-            client.end();
-    });
-};
-
-pubSub.prototype.addListener = pubSub.prototype.on;
-
-pubSub.prototype.emit = function (channel, data, close) {
-    var message = createMessage(data, close);
-    channel = this._prefix + channel;
-    global_client.publish(channel, JSON.stringify(message));
-    debug('#' + global_client.id + ' PUBLISH ' + channel);
-};
-
-pubSub.prototype.removeAllListeners = function (channel) {
-    channel = this._prefix + channel;
-    var list = this._listeners[channel];
-    if (list === undefined)
-        return;
-    for (i in list)
-        list[i].end();
-    delete this._listeners[channel];
-};
-
-
-/**
- * PUSH/PULL object
- */
-
-function pushPull(options) {
-    this._options = options;
-    this._emitCounters = {};
-    this._prefix = 'stackio_pushpull_';
-    this._listeners = {};
-    return this;
-}
-
-pushPull.prototype.on = function (channel, callback) {
-    channel = this._prefix + channel;
-    var client = createClient();
-    if (this._listeners[channel] === undefined)
-        this._listeners[channel] = [];
-    this._listeners[channel].push(client);
-    var parent = this;
-    var popCallback = function (err, data) {
-        message = JSON.parse(data[1]);
-        if (message.data !== null)
-            callback(message.data);
-        if (message.close === true)
-            client.close();
-        if (client.closing === false)
-            client.blpop(channel, 0, popCallback);
-        debug('#' + client.id + ' BLPOP ' + channel);
-    }
-    if (client.closing === false)
-        client.blpop(channel, 0, popCallback);
-    debug('#' + client.id + ' BLPOP ' + channel);
-};
-
-pushPull.prototype.addListener = pushPull.prototype.on;
-
-pushPull.prototype.emit = function (channel, data) {
-    var rpush = function (data) {
-    }
-    channel = this._prefix + channel;
-    if (this._emitCounters[channel] === undefined)
-        this._emitCounters[channel] = 0;
-    // Checking the size of the queue every 10 messages
-    if (this._emitCounters[channel] > 10) {
-        var parent = this;
-        var client = createClient();
-        client.llen(channel, function (err, len) {
-            // If the length of the queue reaches 100 messages, ignoring
-            // further pushes
-            if (len > 100)
-                debug('Warning: message queue is full, cannot push');
-            else
-                parent._emitCounter = 0;
-            client.end();
-        });
-        return;
-    }
-    var message = createMessage(data);
-    global_client.rpush(channel, JSON.stringify(message));
-    debug('#' + global_client.id + ' RPUSH ' + channel);
-};
-
-pushPull.prototype.removeAllListeners = function (channel) {
-    channel = this._prefix + channel;
-    var list = this._listeners[channel];
-    if (list === undefined)
-        return;
-    for (i in list)
-        list[i].end();
-    // In case of push/pull, we can have a list that left
-    global_client.del(this._prefix + channel);
-    delete this._listeners[channel];
-};
-
-
-/**
  * Helpers
  */
 
-function createMessage(data, close) {
+stackio.prototype._createMessage = function (data, close) {
     return {
         data: data,
         version: 1,
