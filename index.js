@@ -28,12 +28,12 @@ function stackio(options) {
     var idx = transport_url.indexOf(':');
     this._options.transport = (idx === -1) ? transport_url : transport_url.slice(0, idx);
     this._options.transport_url = url.parse(transport_url);
-    transport = require('./lib/' + transport);
+    var transport = require('./lib/' + this._options.transport);
     // Selecting the right object based on the settings
     var base = new ({
         'push/pull': transport.pushPull,
         'pub/sub': transport.pubSub
-    }[type])(options);
+    }[type])(this._options);
     // Kind-of dynamic inheritance from the base class
     for (var key in base)
         this[key] = base[key];
@@ -81,7 +81,7 @@ stackio.prototype.call = function (service, method) {
             setTimeout(function () {
                 if (replied === true)
                     return;
-                debug('Cleaning responseChannel');
+                g_debug('Cleaning responseChannel');
                 parent.removeAllListeners(data.responseChannel);
             }, 30 * 1000);
             parent.on(data.responseChannel, function (data) {
@@ -98,12 +98,22 @@ stackio.prototype.call = function (service, method) {
  * Helpers
  */
 
-stackio.prototype._createMessage = function (data, close) {
+g_createMessage = function (data, close) {
     return {
         data: data,
         version: 1,
         close: (close === true)
     };
+}
+
+g_debug = function (data) {
+    if (module.exports.debug !== true)
+        return;
+    console.log('# DEBUG::' + Date.now() + ':: ' + data);
+}
+
+g_error = function (data) {
+    console.log('# ERROR::' + Date.now() + ':: ' + data);
 }
 
 function randomId(length) {
@@ -127,14 +137,4 @@ function randomId(length) {
         result += String.fromCharCode(callbacks[choice]());
     }
     return result;
-}
-
-function debug(data) {
-    if (module.exports.debug !== true)
-        return;
-    console.log('# DEBUG::' + Date.now() + ':: ' + data);
-}
-
-function error(data) {
-    console.log('# ERROR::' + Date.now() + ':: ' + data);
 }
