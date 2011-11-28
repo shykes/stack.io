@@ -28,7 +28,7 @@ function stackio(options) {
     var idx = transport_url.indexOf(':');
     this._options.transport = (idx === -1) ? transport_url : transport_url.slice(0, idx);
     this._options.transport_url = url.parse(transport_url);
-    var transport = require('./lib/' + this._options.transport);
+    var transport = require('./lib/' + this._options.transport + '_transport');
     // Selecting the right object based on the settings
     var base = new ({
         'push/pull': transport.pushPull,
