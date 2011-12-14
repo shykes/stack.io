@@ -13,3 +13,10 @@ library has been implemented to be transport agnostic. So other transports will
 follow.
 
 Feel free to checkout the examples in examples/example.js
+
+Let's start:
+
+    $ npm install stack.io
+    $ node
+    > var stackio = require('stack.io'),
+    >     io = stackio();

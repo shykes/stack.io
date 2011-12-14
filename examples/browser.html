@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>stack.io FTW</title>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="/stack.io/stack.io.js"></script>
+    </head>
+    <body>
+        <p>
+        <script>
+            window.onload = function () {
+                var io = stackio();
+                io.on('toto', function (response) {
+                    console.log('GOT ' + response);
+                });
+                io.call('Test', 'hello')('john', function (response) {
+                    document.write(response);
+                });
+            };
+        </script>
+        </p>
+    </body>
+</html>

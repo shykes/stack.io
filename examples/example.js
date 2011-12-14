@@ -1,5 +1,5 @@
 
-var stackio = require('stackio');
+var stackio = require('stack.io');
 stackio.debug = true;
 var io = stackio();
 

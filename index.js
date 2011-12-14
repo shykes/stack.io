@@ -53,7 +53,7 @@ stackio.prototype.expose = function (service, obj) {
         data.args.push(function (response, keepOpen) {
             parent.emit(data.responseChannel, response, !keepOpen);
         });
-        method.apply(null, data.args);
+        method.apply(this, data.args);
     });
 };
 
