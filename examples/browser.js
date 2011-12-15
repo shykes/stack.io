@@ -19,4 +19,10 @@ io.expose('Test', {
     }
 });
 
+setInterval(function () {
+    io.call('MyService', 'hello')(function (response) {
+        console.log('$$$$$$$$$ MyService.hello -> ' + response);
+    });
+}, 1000);
+
 io.browser(app);

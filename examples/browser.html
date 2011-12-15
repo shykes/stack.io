@@ -16,6 +16,11 @@
                 io.call('Test', 'hello')('john', function (response) {
                     document.write(response);
                 });
+                io.expose('MyService', {
+                    hello: function (reply) {
+                        reply('Hello pipo');
+                    }
+                });
             };
         </script>
         </p>
