@@ -16,18 +16,18 @@ app.listen(3000);
 io.expose('Test', {
     hello: function (arg, reply) {
         var i = 0;
-        //while (i < 42)
-          //  reply(i++, true);
-            //reply('Hello ' + arg + ' #' + i++, 1, 2, 3, 4);
+        while (i < 42)
+            reply(arg + ' ' + i++, true);
         // Closing the response channel at the end of the stream
-        reply('PIPO');
+        reply();
     }
 });
-/*
-setInterval(function () {
+
+io.on('MyService ready', function () {
+    // Calling the `hello' method exposed by `MyService' object in the browser
     io.call('MyService', 'hello')(function (response) {
         console.log('MyService.hello -> ' + response);
     });
-}, 1000);
-*/
+});
+
 io.browser(app);

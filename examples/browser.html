@@ -10,17 +10,15 @@
         <script>
             window.onload = function () {
                 var io = stackio();
-                io.on('toto', function (response) {
-                    console.log('GOT ' + response);
-                });
                 io.call('Test', 'hello')('john', function (response) {
-                    console.log(response);
+                    document.write('<li>' + response + '</li>');
                 });
                 io.expose('MyService', {
                     hello: function (reply) {
                         reply('Hello pipo');
                     }
                 });
+                io.emit('MyService ready');
             };
         </script>
         </p>
