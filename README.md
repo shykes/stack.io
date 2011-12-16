@@ -12,7 +12,17 @@ Only Push/Pull and Pub/Sub models are implemented on top of Redis but the
 library has been implemented to be transport agnostic. So other transports will
 follow.
 
-Feel free to checkout the examples in examples/example.js
+Features:
+ * EventEmitter-like implementation
+ * RPC, expose and call a Service from anywhere
+ * Transport agnostic (multi-transport will follow)
+ * Any Object or Events can ben called or exposed from the browser (using socket.io)
+
+Feel free to checkout
+[the examples](https://github.com/samalba/stack.io/blob/master/examples/example.js)
+and also the browser support examples
+([backend](https://github.com/samalba/stack.io/blob/master/examples/browser.js) and
+ [frontend](https://github.com/samalba/stack.io/blob/master/examples/browser.html)).
 
 Let's start:
 
