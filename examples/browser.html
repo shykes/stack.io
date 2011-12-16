@@ -14,7 +14,7 @@
                     console.log('GOT ' + response);
                 });
                 io.call('Test', 'hello')('john', function (response) {
-                    document.write(response);
+                    console.log(response);
                 });
                 io.expose('MyService', {
                     hello: function (reply) {

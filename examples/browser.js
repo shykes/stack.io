@@ -15,14 +15,19 @@ app.listen(3000);
 // RPC: exposing an object
 io.expose('Test', {
     hello: function (arg, reply) {
-        reply('Hello ' + arg);
+        var i = 0;
+        //while (i < 42)
+          //  reply(i++, true);
+            //reply('Hello ' + arg + ' #' + i++, 1, 2, 3, 4);
+        // Closing the response channel at the end of the stream
+        reply('PIPO');
     }
 });
-
+/*
 setInterval(function () {
     io.call('MyService', 'hello')(function (response) {
-        console.log('$$$$$$$$$ MyService.hello -> ' + response);
+        console.log('MyService.hello -> ' + response);
     });
 }, 1000);
-
+*/
 io.browser(app);

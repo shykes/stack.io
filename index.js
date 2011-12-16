@@ -34,6 +34,8 @@ function stackio(options) {
         'push/pull': transport.pushPull,
         'pub/sub': transport.pubSub
     }[type])(this._options);
+    // Use pushPull transport type explicitely for RPC response
+    this._replyTransport = new transport.pushPull(this._options);
     // Kind-of dynamic inheritance from the base class
     for (var key in base)
         this[key] = base[key];
@@ -45,20 +47,24 @@ function stackio(options) {
  */
 
 stackio.prototype.expose = function (service, obj) {
-    var parent = this;
+    var self = this;
     this.on('rpc_' + service, function (data) {
         var method = obj[data.method];
         if ((typeof method) != 'function')
             return;
         data.args.push(function (response, keepOpen) {
-            parent.emit(data.responseChannel, response, !keepOpen);
+            var m = {
+                close: !keepOpen,
+                data: response
+            };
+            self._replyTransport.emit(data.responseChannel, m, keepOpen);
         });
         method.apply(this, data.args);
     });
 };
 
 stackio.prototype.call = function (service, method) {
-    var parent = this;
+    var self = this;
     return function () {
         var responseCallback = arguments[arguments.length - 1];
         if ((typeof responseCallback) == 'function')
@@ -72,24 +78,26 @@ stackio.prototype.call = function (service, method) {
         var data = {
             method: method,
             args: args,
-            responseChannel: 'response_' + randomId(32)
+            responseChannel: 'response_' + Math.floor(Math.random() * 1000001)
         };
         if (responseCallback) {
             // In case the callback never used the response channel, we set a
             // timeout to destroy it after 30 seconds
             var replied = false;
+            self._replyTransport.on(data.responseChannel, function (m) {
+                replied = true;
+                responseCallback(m.data, !m.close);
+                if (m.close === true)
+                    self._replyTransport.removeAllListeners(data.responseChannel);
+            });
             setTimeout(function () {
                 if (replied === true)
                     return;
                 g_debug('Cleaning responseChannel');
-                parent.removeAllListeners(data.responseChannel);
+                self._replyTransport.removeAllListeners(data.responseChannel);
             }, 30 * 1000);
-            parent.on(data.responseChannel, function (data) {
-                replied = true;
-                responseCallback(data);
-            });
         }
-        parent.emit('rpc_' + service, data);
+        self.emit('rpc_' + service, data);
     }
 };
 
@@ -109,11 +117,10 @@ stackio.prototype.browser = function (app) {
  * Helpers
  */
 
-g_createMessage = function (data, close) {
+g_createMessage = function (data) {
     return {
         data: data,
-        version: 1,
-        close: (close === true)
+        version: 1
     };
 }
 
@@ -125,27 +132,4 @@ g_debug = function (data) {
 
 g_error = function (data) {
     console.log('# ERROR::' + Date.now() + ':: ' + data);
-}
-
-function randomId(length) {
-    var callbacks = [
-        function() {
-            //48 - 57 ('0' - '9')
-            return ((Math.round(Math.random() * 101)) % 10) + 48;
-        },
-        function() {
-            //65 - 90 ('A' - 'Z')
-            return ((Math.round(Math.random() * 101)) % 26) + 65;
-        },
-        function() {
-            //97 - 122 ('a' - 'z')
-            return ((Math.round(Math.random() * 1001)) % 26) + 97;
-        }
-    ];
-    var result = '';
-    for (var i = 0; i < length; i++) {
-        var choice = Math.round(((Math.random() * 11) % (callbacks.length - 1)));
-        result += String.fromCharCode(callbacks[choice]());
-    }
-    return result;
 }
