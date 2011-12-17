@@ -19,10 +19,10 @@ Features:
  * Any Object or Events can ben called or exposed from the browser (using socket.io)
 
 Feel free to checkout
-[the examples](https://github.com/samalba/stack.io/blob/master/examples/example.js)
+[the examples](https://github.com/dotcloud/stack.io/blob/master/examples/example.js)
 and also the browser support examples
-([backend](https://github.com/samalba/stack.io/blob/master/examples/browser.js) and
- [frontend](https://github.com/samalba/stack.io/blob/master/examples/browser.html)).
+([backend](https://github.com/dotcloud/stack.io/blob/master/examples/browser.js) and
+ [frontend](https://github.com/dotcloud/stack.io/blob/master/examples/browser.html)).
 
 Let's start:
 
