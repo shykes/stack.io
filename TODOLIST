@@ -1,0 +1,7 @@
+* Support multi-args for emit
+* Improve channel resource usage on the RPC layer to decrease the number of
+  transport clients.
+* Emit internal events (for instance, when a new Service is exposed).
+* Automatically include socket.io on the browser side.
+* Implement the ZeroMQ transport.
+* Implement the RabbitMQ transport.
